@@ -191,38 +191,49 @@ def render_b():
     img = Image.new("RGB", (W, H), WHITE)
     dr = ImageDraw.Draw(img)
 
-    dr.rectangle([0, 0, W, 118], fill=BLACK)
-    dr.text((40, 26), "ONE DAY.", font=F(SANS_B, 62), fill=WHITE)
-    f_d1, f_d2 = F(SANS_B, 30), F(SANS_B, 21)
-    for txt, fnt, yy in (("MONDAY", f_d1, 26), ("23 NOVEMBER 2026", f_d2, 66)):
-        dr.text((W - 40 - dr.textlength(txt, font=fnt), yy), txt, font=fnt, fill=YELLOW)
-    dr.text((40, 132), "THE WORLD IN ONE DAY — NEWS OF MONDAY 23 NOVEMBER 2026",
-            font=F(SANS_B, 15), fill=(110, 110, 118))
+    # No masthead band: the red lead block starts at the very top of the
+    # page, with the date as a small line inside it above the kicker.
+    # The block is compact (~26% of the page) and hugs its text: its
+    # height is measured from the wrapped headline/body, so there is no
+    # empty red stretch under the lead body.
+    f_date, f_kick = F(SANS_B, 17), F(SANS_B, 18)
+    f_head, f_body = F(SANS_B, 46), F(SANS, 19)
+    head_text = "CLIMATE TALKS END WITH NO DEAL"
+    body_text = ("The UN talks in Antalya closed without an agreement after the EU and "
+                 "others rejected a draft with no fossil-fuel phase-out language. "
+                 "Australia\u2019s PM Albanese: a sign of \u201cdifficult geopolitical times\u201d.")
+    HEAD_LEAD, BODY_LEAD = 54, 26
+    y_date, y_kick, y_head = 24, 56, 96
+    y_body = y_head + len(wrap(dr, head_text, f_head, 944)) * HEAD_LEAD + 12
+    lead_bottom = y_body + len(wrap(dr, body_text, f_body, 930)) * BODY_LEAD + 26
 
-    dr.rectangle([0, 158, W, 452], fill=RED)
-    dr.text((40, 182), "THE LEAD  ·  CLIMATE — COP31, ANTALYA", font=F(SANS_B, 18), fill=YELLOW)
-    y = block(dr, 40, 214, "CLIMATE TALKS END WITH NO DEAL", F(SANS_B, 58), WHITE, 944, 70)
-    block(dr, 40, y + 12,
-          "The UN talks in Antalya closed without an agreement after the EU and "
-          "others rejected a draft with no fossil-fuel phase-out language. "
-          "Australia\u2019s PM Albanese: a sign of \u201cdifficult geopolitical times\u201d.",
-          F(SANS, 20), (255, 236, 230), 930, 29)
+    dr.rectangle([0, 0, W, lead_bottom], fill=RED)
+    dr.text((40, y_date), "MONDAY  ·  23 NOVEMBER 2026", font=f_date, fill=WHITE)
+    dr.text((40, y_kick), "THE LEAD  ·  CLIMATE — COP31, ANTALYA", font=f_kick, fill=YELLOW)
+    block(dr, 40, y_head, head_text, f_head, WHITE, 944, HEAD_LEAD)
+    block(dr, 40, y_body, body_text, f_body, (255, 236, 230), 930, BODY_LEAD)
 
-    GX, GY, GW, GH, GAP = 40, 470, 462, 134, 20
+    # Story grid takes the freed room: rows taller than B2 (same internal
+    # spacing), grid centred in the space down to the ticker so no large
+    # empty area remains anywhere.
+    TY = 940
+    GX, GW, GAP = 40, 462, 20
+    ROW_GAP = 18
+    GH = min(196, (TY - 16 - (lead_bottom + 22) - 2 * ROW_GAP) // 3)
+    leftover = (TY - 16) - (lead_bottom + 22) - (3 * GH + 2 * ROW_GAP)
+    GY = lead_bottom + 22 + leftover // 2
     for i, (kick, col, _ic, head, body) in enumerate(STORIES):
-        cx, cy = GX + (i % 2) * (GW + GAP), GY + (i // 2) * (GH + 16)
-        dr.rectangle([cx, cy, cx + 12, cy + GH], fill=col)
-        dr.text((cx + 28, cy + 2), f"{i + 1:02d}", font=F(SANS_B, 30), fill=col)
-        dr.text((cx + 84, cy + 12), kick, font=F(SANS_B, 14), fill=(110, 110, 118))
-        yy = block(dr, cx + 28, cy + 46, head, F(SANS_B, 22), BLACK, GW - 44, 27)
-        block(dr, cx + 28, yy + 3, body, F(SANS, 14), (70, 70, 78), GW - 44, 19)
-
-    TY = 928
-    dr.rectangle([0, TY, W, 984], fill=BLACK)
-    dr.text((40, TY + 9), "ALSO MONDAY", font=F(SANS_B, 15), fill=YELLOW)
+        cx, cy = GX + (i % 2) * (GW + GAP), GY + (i // 2) * (GH + ROW_GAP)
+        dr.rectangle([cx, cy + 5, cx + 12, cy + GH - 5], fill=col)
+        dr.text((cx + 30, cy + 8), f"{i + 1:02d}", font=F(SANS_B, 30), fill=col)
+        dr.text((cx + 90, cy + 17), kick, font=F(SANS_B, 14), fill=(110, 110, 118))
+        yy = block(dr, cx + 30, cy + 50, head, F(SANS_B, 21), BLACK, GW - 46, 25)
+        block(dr, cx + 30, yy + 6, body, F(SANS, 13), (70, 70, 78), GW - 46, 17)
+    dr.rectangle([0, TY, W, 992], fill=BLACK)
+    dr.text((40, TY + 8), "ALSO MONDAY", font=F(SANS_B, 15), fill=YELLOW)
     tx = 40 + dr.textlength("ALSO MONDAY", font=F(SANS_B, 15)) + 16
-    block(dr, tx, TY + 9, TICKER, F(SANS, 14), WHITE, W - tx - 36, 19)
-    centered(dr, 990, FOOTER, F(SANS, 12), (130, 130, 138))
+    block(dr, tx, TY + 8, TICKER, F(SANS, 14), WHITE, W - tx - 36, 19)
+    centered(dr, 998, FOOTER, F(SANS, 12), (130, 130, 138))
     return img
 
 
