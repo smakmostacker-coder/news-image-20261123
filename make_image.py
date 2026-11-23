@@ -193,16 +193,17 @@ def render_b():
 
     # No masthead band: the red lead block starts at the very top of the
     # page, with the date as a small line inside it above the kicker.
-    # The block is compact (~26% of the page) and hugs its text: its
-    # height is measured from the wrapped headline/body, so there is no
-    # empty red stretch under the lead body.
+    # The headline is back at B4's big 58pt (two lines), but the block
+    # still hugs its text like B5: its height is measured from the
+    # wrapped headline/body, so there is no empty red stretch under
+    # the lead body.
     f_date, f_kick = F(SANS_B, 17), F(SANS_B, 18)
-    f_head, f_body = F(SANS_B, 46), F(SANS, 19)
+    f_head, f_body = F(SANS_B, 58), F(SANS, 19)
     head_text = "CLIMATE TALKS END WITH NO DEAL"
     body_text = ("The UN talks in Antalya closed without an agreement after the EU and "
                  "others rejected a draft with no fossil-fuel phase-out language. "
                  "Australia\u2019s PM Albanese: a sign of \u201cdifficult geopolitical times\u201d.")
-    HEAD_LEAD, BODY_LEAD = 54, 26
+    HEAD_LEAD, BODY_LEAD = 64, 26
     y_date, y_kick, y_head = 24, 56, 96
     y_body = y_head + len(wrap(dr, head_text, f_head, 944)) * HEAD_LEAD + 12
     lead_bottom = y_body + len(wrap(dr, body_text, f_body, 930)) * BODY_LEAD + 26
